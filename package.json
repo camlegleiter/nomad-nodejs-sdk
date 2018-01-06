@@ -1,0 +1,42 @@
+{
+  "name": "node-nomad-sdk",
+  "version": "0.7.0",
+  "description": "A NodeJS SDK for interacting with a Nomad cluster",
+  "main": "dist/src/index.js",
+  "author": "Cameron Legleiter <camlegleiter@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint src test",
+    "test": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text mocha --require babel-register --require test/.setup.js --recursive",
+    "transpile": "rm -rf dist/* && babel src --out-dir dist/src && babel test --out-dir dist/test && cp package.json dist/"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-istanbul": "^4.1.5",
+    "babel-plugin-transform-async-to-module-method": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-1": "^6.24.1",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "cross-env": "^5.1.1",
+    "eslint": "^4.12.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-mocha": "^4.11.0",
+    "mocha": "^4.0.1",
+    "nock": "^9.1.4",
+    "nyc": "^11.3.0",
+    "sinon": "^4.1.2",
+    "sinon-chai": "^2.14.0"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "lodash": "^4.17.4",
+    "request": "^2.83.0",
+    "url-escape-tag": "^1.0.0"
+  },
+  "nyc": {
+    "sourceMap": false,
+    "instrument": false
+  }
+}
