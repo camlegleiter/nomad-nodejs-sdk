@@ -7,7 +7,7 @@ describe('Nomad.Metrics', () => {
 
   let client;
 
-  before(() => {
+  beforeAll(() => {
     nock.disableNetConnect();
   });
 
@@ -25,54 +25,40 @@ describe('Nomad.Metrics', () => {
     nock.cleanAll();
   });
 
-  after(() => {
+  afterAll(() => {
     nock.enableNetConnect();
   });
 
   describe('#getMetrics', () => {
     const metrics = { Counters: [], Gauges: [], Samples: [] };
 
-    it('makes a GET call to the /metrics endpoint', () => {
+    it('makes a GET call to the /metrics endpoint', async () => {
       nock(/localhost/).get('/v1/metrics').query((qs) => {
-        expect(qs).to.not.have.property('format');
+        expect(qs).not.toHaveProperty('format');
         return true;
       }).reply(200, metrics);
 
-      return expect(client.getMetrics()).eventually.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/metrics');
-
-        expect(body).to.deep.equal(metrics);
-      });
+      const [, body] = await client.getMetrics();
+      expect(body).toEqual(metrics);
     });
 
-    it('optionally sets the response format', () => {
+    it('optionally sets the response format', async () => {
       nock(/localhost/).get('/v1/metrics').query((qs) => {
-        expect(qs).to.have.property('format', Format);
+        expect(qs).toHaveProperty('format', Format);
         return true;
       }).reply(200, metrics);
 
-      return expect(client.getMetrics({ Format })).eventually.fulfilled.then(([, body]) => {
-        expect(body).to.deep.equal(metrics);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get('/v1/metrics').reply(200, metrics);
-
-      return client.getMetrics().then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.getMetrics({ Format });
+      expect(body).toEqual(metrics);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get('/v1/metrics').reply(200, metrics);
 
-      client.getMetrics((err, [res, body]) => {
-        expect(err).to.be.null;
+      client.getMetrics((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/metrics');
-        expect(body).to.deep.equal(metrics);
-
+        expect(body).toEqual(metrics);
         done();
       });
     });

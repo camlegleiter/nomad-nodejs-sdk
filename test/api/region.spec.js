@@ -3,7 +3,7 @@ import nock from 'nock';
 import Nomad from '../../src';
 
 describe('Nomad.Region', () => {
-  before(() => {
+  beforeAll(() => {
     nock.disableNetConnect();
   });
 
@@ -15,7 +15,7 @@ describe('Nomad.Region', () => {
     nock.cleanAll();
   });
 
-  after(() => {
+  afterAll(() => {
     nock.enableNetConnect();
   });
 
@@ -28,33 +28,20 @@ describe('Nomad.Region', () => {
       client = new Nomad.Region();
     });
 
-    it('makes a GET call to the /status/regions endpoint', () => {
+    it('makes a GET call to the /status/regions endpoint', async () => {
       nock(/localhost/).get('/v1/status/regions').reply(200, regions);
 
-      return expect(client.listRegions()).to.eventually.be.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/status/regions');
-
-        expect(body).to.deep.equal(regions);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get('/v1/status/regions').reply(200, regions);
-
-      return client.listRegions().then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.listRegions();
+      expect(body).toEqual(regions);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get('/v1/status/regions').reply(200, regions);
 
-      client.listRegions((err, [res, body]) => {
-        expect(err).to.be.null;
+      client.listRegions((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/status/regions');
-        expect(body).to.deep.equal(regions);
-
+        expect(body).toEqual(regions);
         done();
       });
     });

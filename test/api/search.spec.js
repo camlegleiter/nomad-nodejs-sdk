@@ -8,7 +8,7 @@ describe('Nomad.Search', () => {
 
   let client;
 
-  before(() => {
+  beforeAll(() => {
     nock.disableNetConnect();
   });
 
@@ -24,44 +24,31 @@ describe('Nomad.Search', () => {
     nock.cleanAll();
   });
 
-  after(() => {
+  afterAll(() => {
     nock.enableNetConnect();
   });
 
   describe('#search', () => {
     const search = { Matches: {}, Truncations: {} };
 
-    it('makes a POST call to the /search endpoint', () => {
+    it('makes a POST call to the /search endpoint', async () => {
       nock(/localhost/).post('/v1/search').reply(200, (uri, body) => {
-        expect(body).to.deep.equal({ Prefix, Context });
+        expect(body).toEqual({ Prefix, Context });
 
         return search;
       });
 
-      return expect(client.search({ Prefix, Context })).eventually.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/search');
-
-        expect(body).to.deep.equal(search);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).post('/v1/search').reply(200, search);
-
-      return client.search({ Prefix, Context }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.search({ Prefix, Context });
+      expect(body).toEqual(search);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).post('/v1/search').reply(200, search);
 
-      client.search({ Prefix, Context }, (err, [res, body]) => {
-        expect(err).to.be.null;
+      client.search({ Prefix, Context }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/search');
-        expect(body).to.deep.equal(search);
-
+        expect(body).toEqual(search);
         done();
       });
     });

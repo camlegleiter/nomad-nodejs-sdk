@@ -11,7 +11,7 @@ describe('Nomad.ACLToken', () => {
   let token;
   let client;
 
-  before(() => {
+  beforeAll(() => {
     nock.disableNetConnect();
   });
 
@@ -40,296 +40,187 @@ describe('Nomad.ACLToken', () => {
     nock.cleanAll();
   });
 
-  after(() => {
+  afterAll(() => {
     nock.enableNetConnect();
   });
 
   describe('#bootstrapToken', () => {
-    it('makes a POST call to the /acl/bootstrap endpoint', () => {
+    it('makes a POST call to the /acl/bootstrap endpoint', async () => {
       nock(/localhost/).post('/v1/acl/bootstrap').reply(200, token);
 
-      return expect(client.bootstrapToken()).eventually.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/acl/bootstrap');
-
-        expect(body).to.deep.equal(token);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).post('/v1/acl/bootstrap').reply(200, token);
-
-      return client.bootstrapToken().then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.bootstrapToken();
+      expect(body).toEqual(token);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).post('/v1/acl/bootstrap').reply(200, token);
 
-      client.bootstrapToken((err, [res, body]) => {
-        expect(err).to.be.null;
+      client.bootstrapToken((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/acl/bootstrap');
-        expect(body).to.deep.equal(token);
-
+        expect(body).toEqual(token);
         done();
       });
     });
   });
 
   describe('#listTokens', () => {
-    it('makes a GET call to the /acl/tokens endpoint', () => {
+    it('makes a GET call to the /acl/tokens endpoint', async () => {
       nock(/localhost/).get('/v1/acl/tokens').reply(200, [token]);
 
-      return expect(client.listTokens()).eventually.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/acl/tokens');
-
-        expect(body).to.deep.equal([token]);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get('/v1/acl/tokens').reply(200, [token]);
-
-      return client.listTokens().then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.listTokens();
+      expect(body).toEqual([token]);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get('/v1/acl/tokens').reply(200, [token]);
 
-      client.listTokens((err, [res, body]) => {
-        expect(err).to.be.null;
+      client.listTokens((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/acl/tokens');
-        expect(body).to.deep.equal([token]);
-
+        expect(body).toEqual([token]);
         done();
       });
     });
   });
 
   describe('#createToken', () => {
-    it('makes a POST call to the /acl/tokens endpoint', () => {
+    it('makes a POST call to the /acl/tokens endpoint', async () => {
       nock(/localhost/).post('/v1/acl/tokens').reply(200, token);
 
-      return expect(client.createToken({
-        Name, Type, Policies, Global,
-      })).eventually.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/acl/tokens');
-
-        expect(body).to.deep.equal(token);
-      });
+      const [, body] = await client.createToken({ Name, Type, Policies, Global });
+      expect(body).toEqual(token);
     });
 
-    it('allows for an optional Name', () => {
+    it('allows for an optional Name', async () => {
       Name = undefined;
       token.Name = '';
 
       nock(/localhost/).post('/v1/acl/tokens').reply(200, (uri, body) => {
-        expect(body).to.deep.equal({ Type, Policies, Global });
+        expect(body).toEqual({ Type, Policies, Global });
 
         return token;
       });
 
-      return expect(client.createToken({
-        Name, Type, Policies, Global,
-      })).to.eventually.be.fulfilled.then(([, body]) => {
-        expect(body).to.deep.equal(token);
-      });
+      const [, body] = await client.createToken({ Name, Type, Policies, Global });
+      expect(body).toEqual(token);
     });
 
-    it('allows for the ACL token to optionally be made global', () => {
+    it('allows for the ACL token to optionally be made global', async () => {
       Global = undefined;
       token.Global = false;
 
       nock(/localhost/).post('/v1/acl/tokens').reply(200, (uri, body) => {
-        expect(body).to.deep.equal({ Name, Type, Policies });
+        expect(body).toEqual({ Name, Type, Policies });
 
         return token;
       });
 
-      return expect(client.createToken({
-        Name, Type, Policies, Global,
-      })).to.eventually.be.fulfilled.then(([, body]) => {
-        expect(body).to.deep.equal(token);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).post('/v1/acl/tokens').reply(200, token);
-
-      return client.createToken({
-        Name, Type, Policies, Global,
-      }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.createToken({ Name, Type, Policies, Global });
+      expect(body).toEqual(token);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).post('/v1/acl/tokens').reply(200, token);
 
-      client.createToken({
-        Name, Type, Policies, Global,
-      }, (err, [res, body]) => {
-        expect(err).to.be.null;
+      client.createToken({ Name, Type, Policies, Global }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/acl/tokens');
-        expect(body).to.deep.equal(token);
-
+        expect(body).toEqual(token);
         done();
       });
     });
   });
 
   describe('#updateToken', () => {
-    it('makes a POST call to the /acl/token/:AccessorID endpoint', () => {
+    it('makes a POST call to the /acl/token/:AccessorID endpoint', async () => {
       nock(/localhost/).post(`/v1/acl/token/${AccessorID}`).reply(200, token);
 
-      return expect(client.updateToken({
-        AccessorID, Name, Type, Policies,
-      })).eventually.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal(`/v1/acl/token/${AccessorID}`);
-
-        expect(body).to.deep.equal(token);
-      });
+      const [, body] = await client.updateToken({ AccessorID, Name, Type, Policies });
+      expect(body).toEqual(token);
     });
 
-    it('allows for an optional Name update', () => {
+    it('allows for an optional Name update', async () => {
       Name = undefined;
       token.Name = '';
 
       nock(/localhost/).post(`/v1/acl/token/${AccessorID}`).reply(200, (uri, body) => {
-        expect(body).to.deep.equal({ AccessorID, Type, Policies });
+        expect(body).toEqual({ AccessorID, Type, Policies });
 
         return token;
       });
 
-      return expect(client.updateToken({
-        AccessorID, Name, Type, Policies,
-      })).to.eventually.be.fulfilled.then(([, body]) => {
-        expect(body).to.deep.equal(token);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).post(`/v1/acl/token/${AccessorID}`).reply(200, token);
-
-      return client.updateToken({
-        AccessorID, Name, Type, Policies,
-      }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.updateToken({ AccessorID, Name, Type, Policies });
+      expect(body).toEqual(token);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).post(`/v1/acl/token/${AccessorID}`).reply(200, token);
 
-      client.updateToken({
-        AccessorID, Name, Type, Policies,
-      }, (err, [res, body]) => {
-        expect(err).to.be.null;
+      client.updateToken({ AccessorID, Name, Type, Policies }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal(`/v1/acl/token/${AccessorID}`);
-        expect(body).to.deep.equal(token);
-
+        expect(body).toEqual(token);
         done();
       });
     });
   });
 
   describe('#readToken', () => {
-    it('makes a GET call to the /acl/token endpoint', () => {
+    it('makes a GET call to the /acl/token endpoint', async () => {
       nock(/localhost/).get(`/v1/acl/token/${AccessorID}`).reply(200, token);
 
-      return expect(client.readToken({ AccessorID })).eventually.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal(`/v1/acl/token/${AccessorID}`);
-
-        expect(body).to.deep.equal(token);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get(`/v1/acl/token/${AccessorID}`).reply(200, token);
-
-      return client.readToken({ AccessorID }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.readToken({ AccessorID });
+      expect(body).toEqual(token);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get(`/v1/acl/token/${AccessorID}`).reply(200, token);
 
-      client.readToken({ AccessorID }, (err, [res, body]) => {
-        expect(err).to.be.null;
+      client.readToken({ AccessorID }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal(`/v1/acl/token/${AccessorID}`);
-        expect(body).to.deep.equal(token);
-
+        expect(body).toEqual(token);
         done();
       });
     });
   });
 
   describe('#readSelfToken', () => {
-    it('makes a GET call to the /acl/token/self endpoint', () => {
+    it('makes a GET call to the /acl/token/self endpoint', async () => {
       nock(/localhost/).get('/v1/acl/token/self').reply(200, token);
 
-      return expect(client.readSelfToken()).eventually.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/acl/token/self');
-
-        expect(body).to.deep.equal(token);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get('/v1/acl/token/self').reply(200, token);
-
-      return client.readSelfToken().then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.readSelfToken();
+      expect(body).toEqual(token);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get('/v1/acl/token/self').reply(200, token);
 
-      client.readSelfToken((err, [res, body]) => {
-        expect(err).to.be.null;
+      client.readSelfToken((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/acl/token/self');
-        expect(body).to.deep.equal(token);
-
+        expect(body).toEqual(token);
         done();
       });
     });
   });
 
   describe('#deleteToken', () => {
-    it('makes a DELETE call to the /acl/token endpoint', () => {
+    it('makes a DELETE call to the /acl/token endpoint', async () => {
       nock(/localhost/).delete(`/v1/acl/token/${AccessorID}`).reply(200);
 
-      return expect(client.deleteToken({ AccessorID })).eventually.fulfilled.then(([res]) => {
-        expect(res.req.path).to.equal(`/v1/acl/token/${AccessorID}`);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).delete(`/v1/acl/token/${AccessorID}`).reply(200);
-
-      return client.deleteToken({ AccessorID }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.deleteToken({ AccessorID });
+      expect(body).toBeUndefined();
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).delete(`/v1/acl/token/${AccessorID}`).reply(200);
 
-      client.deleteToken({ AccessorID }, (err, [res]) => {
-        expect(err).to.be.null;
+      client.deleteToken({ AccessorID }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal(`/v1/acl/token/${AccessorID}`);
-
+        expect(body).toBeUndefined();
         done();
       });
     });

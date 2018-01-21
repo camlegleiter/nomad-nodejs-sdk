@@ -2,11 +2,13 @@ module.exports = {
   extends: 'airbnb-base',
   plugins: [
     'import',
-    'mocha',
   ],
   env: {
     'node': true,
     'es6': true,
+  },
+  parserOptions: {
+    ecmaVersion: 2017,
   },
   rules: {
     'arrow-parens': ['error', 'always'],
@@ -16,6 +18,5 @@ module.exports = {
     }],
     'object-curly-newline': ['error', { 'consistent': true }],
     'no-param-reassign': ['error'],
-    'mocha/no-exclusive-tests': 'error',
   }
 };

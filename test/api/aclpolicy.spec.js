@@ -10,7 +10,7 @@ describe('Nomad.ACLPolicy', () => {
   let client;
   let validPolicy;
 
-  before(() => {
+  beforeAll(() => {
     nock.disableNetConnect();
   });
 
@@ -26,7 +26,7 @@ describe('Nomad.ACLPolicy', () => {
     nock.cleanAll();
   });
 
-  after(() => {
+  afterAll(() => {
     nock.enableNetConnect();
   });
 
@@ -35,32 +35,20 @@ describe('Nomad.ACLPolicy', () => {
       client = new Nomad.ACLPolicy();
     });
 
-    it('makes a GET call to the /acl/policies endpoint', () => {
+    it('makes a GET call to the /acl/policies endpoint', async () => {
       nock(/localhost/).get('/v1/acl/policies').reply(200, [validPolicy]);
 
-      return expect(client.listPolicies()).to.eventually.be.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/acl/policies');
-
-        expect(body).to.deep.equal([validPolicy]);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get('/v1/acl/policies').reply(200, [validPolicy]);
-
-      return expect(client.listPolicies()).to.eventually.be.fulfilled.then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.listPolicies();
+      expect(body).toEqual([validPolicy]);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get('/v1/acl/policies').reply(200, [validPolicy]);
 
-      client.listPolicies((err, [res]) => {
-        expect(err).to.be.null;
+      client.listPolicies((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/acl/policies');
-
+        expect(body).toEqual([validPolicy]);
         done();
       });
     });
@@ -71,37 +59,20 @@ describe('Nomad.ACLPolicy', () => {
       client = new Nomad.ACLPolicy();
     });
 
-    it('makes a POST call to the /acl/policy/:name endpoint', () => {
+    it('makes a POST call to the /acl/policy/:name endpoint', async () => {
       nock(/localhost/).post(`/v1/acl/policy/${Name}`).reply(200, validPolicy);
 
-      return expect(client.upsertPolicy({
-        Name, Description, Rules,
-      })).to.eventually.be.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal(`/v1/acl/policy/${Name}`);
-
-        expect(body).to.deep.equal(validPolicy);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).post(`/v1/acl/policy/${Name}`).reply(200, validPolicy);
-
-      return client.upsertPolicy({
-        Name, Description, Rules,
-      }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.upsertPolicy({ Name, Description, Rules });
+      expect(body).toEqual(validPolicy);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).post(`/v1/acl/policy/${Name}`).reply(200, validPolicy);
 
-      client.upsertPolicy({ Name, Description, Rules }, (err, [res, body]) => {
-        expect(err).to.be.null;
+      client.upsertPolicy({ Name, Description, Rules }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal(`/v1/acl/policy/${Name}`);
-        expect(body).to.deep.equal(validPolicy);
-
+        expect(body).toEqual(validPolicy);
         done();
       });
     });
@@ -112,33 +83,20 @@ describe('Nomad.ACLPolicy', () => {
       client = new Nomad.ACLPolicy();
     });
 
-    it('makes a GET call to the /acl/policy/:name endpoint', () => {
+    it('makes a GET call to the /acl/policy/:name endpoint', async () => {
       nock(/localhost/).get(`/v1/acl/policy/${Name}`).reply(200, validPolicy);
 
-      return expect(client.readPolicy({ Name })).to.eventually.be.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal(`/v1/acl/policy/${Name}`);
-
-        expect(body).to.deep.equal(validPolicy);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get(`/v1/acl/policy/${Name}`).reply(200, validPolicy);
-
-      return client.readPolicy({ Name }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.readPolicy({ Name });
+      expect(body).toEqual(validPolicy);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get(`/v1/acl/policy/${Name}`).reply(200, validPolicy);
 
-      client.readPolicy({ Name }, (err, [res, body]) => {
-        expect(err).to.be.null;
+      client.readPolicy({ Name }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal(`/v1/acl/policy/${Name}`);
-        expect(body).to.deep.equal(validPolicy);
-
+        expect(body).toEqual(validPolicy);
         done();
       });
     });
@@ -149,30 +107,20 @@ describe('Nomad.ACLPolicy', () => {
       client = new Nomad.ACLPolicy();
     });
 
-    it('makes a DELETE call to the /acl/policy/:name endpoint', () => {
-      nock(/localhost/).delete(`/v1/acl/policy/${Name}`).reply(200, validPolicy);
+    it('makes a DELETE call to the /acl/policy/:name endpoint', async () => {
+      nock(/localhost/).delete(`/v1/acl/policy/${Name}`).reply(200);
 
-      return expect(client.deletePolicy({ Name })).to.eventually.be.fulfilled.then(([res]) => {
-        expect(res.req.path).to.equal(`/v1/acl/policy/${Name}`);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).delete(`/v1/acl/policy/${Name}`).reply(200, validPolicy);
-
-      return client.deletePolicy({ Name }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.deletePolicy({ Name });
+      expect(body).toBeUndefined();
     });
 
     it('supports a callback function', (done) => {
-      nock(/localhost/).delete(`/v1/acl/policy/${Name}`).reply(200, validPolicy);
+      nock(/localhost/).delete(`/v1/acl/policy/${Name}`).reply(200);
 
-      client.deletePolicy({ Name }, (err, [res]) => {
-        expect(err).to.be.null;
+      client.deletePolicy({ Name }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal(`/v1/acl/policy/${Name}`);
-
+        expect(body).toBeUndefined();
         done();
       });
     });

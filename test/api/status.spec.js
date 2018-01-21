@@ -8,7 +8,7 @@ describe('Nomad.Status', () => {
 
   let client;
 
-  before(() => {
+  beforeAll(() => {
     nock.disableNetConnect();
   });
 
@@ -20,7 +20,7 @@ describe('Nomad.Status', () => {
     nock.cleanAll();
   });
 
-  after(() => {
+  afterAll(() => {
     nock.enableNetConnect();
   });
 
@@ -29,32 +29,20 @@ describe('Nomad.Status', () => {
       client = new Nomad.Status();
     });
 
-    it('makes a GET call to the /status/leader endpoint', () => {
+    it('makes a GET call to the /status/leader endpoint', async () => {
       nock(/localhost/).get('/v1/status/leader').reply(200, leader);
 
-      return expect(client.readLeader()).to.eventually.be.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/status/leader');
-        expect(body).to.deep.equal(leader);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get('/v1/status/leader').reply(200, leader);
-
-      return client.readLeader().then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.readLeader();
+      expect(body).toEqual(leader);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get('/v1/status/leader').reply(200, leader);
 
-      client.readLeader((err, [res, body]) => {
-        expect(err).to.be.null;
+      client.readLeader((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/status/leader');
-        expect(body).to.deep.equal(leader);
-
+        expect(body).toEqual(leader);
         done();
       });
     });
@@ -65,32 +53,20 @@ describe('Nomad.Status', () => {
       client = new Nomad.Status();
     });
 
-    it('makes a GET call to the /status/peers endpoint', () => {
+    it('makes a GET call to the /status/peers endpoint', async () => {
       nock(/localhost/).get('/v1/status/peers').reply(200, peers);
 
-      return expect(client.listPeers()).to.eventually.be.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/status/peers');
-        expect(body).to.deep.equal(peers);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get('/v1/status/peers').reply(200, peers);
-
-      return client.listPeers().then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.listPeers();
+      expect(body).toEqual(peers);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get('/v1/status/peers').reply(200, peers);
 
-      client.listPeers((err, [res, body]) => {
-        expect(err).to.be.null;
+      client.listPeers((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/status/peers');
-        expect(body).to.deep.equal(peers);
-
+        expect(body).toEqual(peers);
         done();
       });
     });

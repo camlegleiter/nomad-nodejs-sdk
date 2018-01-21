@@ -11,7 +11,7 @@ describe('Nomad.SentinelPolicy', () => {
   let Description;
   let validPolicy;
 
-  before(() => {
+  beforeAll(() => {
     nock.disableNetConnect();
   });
 
@@ -28,7 +28,7 @@ describe('Nomad.SentinelPolicy', () => {
     nock.cleanAll();
   });
 
-  after(() => {
+  afterAll(() => {
     nock.enableNetConnect();
   });
 
@@ -39,36 +39,21 @@ describe('Nomad.SentinelPolicy', () => {
       client = new Nomad.SentinelPolicy();
     });
 
-    it('makes a GET call to the /sentinel/policies endpoint', () => {
+    it('makes a GET call to the /sentinel/policies endpoint', async () => {
       nock(/localhost/).get('/v1/sentinel/policies').reply(200, [validPolicy]);
 
-      return expect(client.listPolicies()).to.eventually.be.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal('/v1/sentinel/policies');
-
-        expect(body).to.deep.equal([validPolicy]);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get('/v1/sentinel/policies').reply(200, [validPolicy]);
-
-      return client.listPolicies().then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.listPolicies();
+      expect(body).toEqual([validPolicy]);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get('/v1/sentinel/policies').reply(200, [validPolicy]);
 
-      client.listPolicies((err, [res, body]) => {
-        if (err) {
-          return done(err);
-        }
+      client.listPolicies((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/sentinel/policies');
-
-        expect(body).to.deep.equal([validPolicy]);
-        return done();
+        expect(body).toEqual([validPolicy]);
+        done();
       });
     });
   });
@@ -80,43 +65,30 @@ describe('Nomad.SentinelPolicy', () => {
       client = new Nomad.SentinelPolicy();
     });
 
-    it('makes a POST call to the /sentinel/policy/:name endpoint', () => {
+    it('makes a POST call to the /sentinel/policy/:name endpoint', async () => {
       nock(/localhost/).post(`/v1/sentinel/policy/${Name}`).reply(200, validPolicy);
 
-      return expect(client.upsertPolicy({
+      const [, body] = await client.upsertPolicy({
         Name, Description, Scope, EnforcementLevel, Policy,
-      })).to.eventually.be.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal(`/v1/sentinel/policy/${Name}`);
-
-        expect(body).to.deep.equal(validPolicy);
       });
+
+      expect(body).toEqual(validPolicy);
     });
 
-    it('allows for an optional description', () => {
+    it('allows for an optional description', async () => {
       Description = '';
       delete validPolicy.Description;
 
       nock(/localhost/).post(`/v1/sentinel/policy/${Name}`).reply(200, (uri, body) => {
-        expect(body).to.deep.equal({ Name, Scope, EnforcementLevel, Policy });
+        expect(body).toEqual({ Name, Scope, EnforcementLevel, Policy });
 
         return validPolicy;
       });
 
-      return expect(client.upsertPolicy({
+      const [, body] = await client.upsertPolicy({
         Name, Description, Scope, EnforcementLevel, Policy,
-      })).to.eventually.be.fulfilled.then(([, body]) => {
-        expect(body).to.deep.equal({ Name, Scope, EnforcementLevel });
       });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).post(`/v1/sentinel/policy/${Name}`).reply(200, validPolicy);
-
-      return client.upsertPolicy({
-        Name, Description, Scope, EnforcementLevel, Policy,
-      }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      expect(body).toEqual({ Name, Scope, EnforcementLevel });
     });
 
     it('supports a callback function', (done) => {
@@ -124,15 +96,11 @@ describe('Nomad.SentinelPolicy', () => {
 
       client.upsertPolicy({
         Name, Description, Scope, EnforcementLevel, Policy,
-      }, (err, [res, body]) => {
-        if (err) {
-          return done(err);
-        }
+      }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal(`/v1/sentinel/policy/${Name}`);
-
-        expect(body).to.deep.equal(validPolicy);
-        return done();
+        expect(body).toEqual(validPolicy);
+        done();
       });
     });
   });
@@ -144,36 +112,21 @@ describe('Nomad.SentinelPolicy', () => {
       client = new Nomad.SentinelPolicy();
     });
 
-    it('makes a GET call to the /sentinel/policy/:name endpoint', () => {
+    it('makes a GET call to the /sentinel/policy/:name endpoint', async () => {
       nock(/localhost/).get(`/v1/sentinel/policy/${Name}`).reply(200, validPolicy);
 
-      return expect(client.readPolicy({ Name })).to.eventually.be.fulfilled.then(([res, body]) => {
-        expect(res.req.path).to.equal(`/v1/sentinel/policy/${Name}`);
-
-        expect(body).to.deep.equal(validPolicy);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).get(`/v1/sentinel/policy/${Name}`).reply(200, validPolicy);
-
-      return client.readPolicy({ Name }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.readPolicy({ Name });
+      expect(body).toEqual(validPolicy);
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).get(`/v1/sentinel/policy/${Name}`).reply(200, validPolicy);
 
-      client.readPolicy({ Name }, (err, [res, body]) => {
-        if (err) {
-          return done(err);
-        }
+      client.readPolicy({ Name }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal(`/v1/sentinel/policy/${Name}`);
-
-        expect(body).to.deep.equal(validPolicy);
-        return done();
+        expect(body).toEqual(validPolicy);
+        done();
       });
     });
   });
@@ -185,32 +138,21 @@ describe('Nomad.SentinelPolicy', () => {
       client = new Nomad.SentinelPolicy();
     });
 
-    it('makes a DELETE call to the /sentinel/policy/:name endpoint', () => {
+    it('makes a DELETE call to the /sentinel/policy/:name endpoint', async () => {
       nock(/localhost/).delete(`/v1/sentinel/policy/${Name}`).reply(200);
 
-      return expect(client.deletePolicy({ Name })).to.eventually.be.fulfilled.then(([res]) => {
-        expect(res.req.path).to.equal(`/v1/sentinel/policy/${Name}`);
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).delete(`/v1/sentinel/policy/${Name}`).reply(200);
-
-      return client.deletePolicy({ Name }).then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.deletePolicy({ Name });
+      expect(body).toBeUndefined();
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).delete(`/v1/sentinel/policy/${Name}`).reply(200);
 
-      client.deletePolicy({ Name }, (err, [res]) => {
-        if (err) {
-          return done(err);
-        }
+      client.deletePolicy({ Name }, (err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal(`/v1/sentinel/policy/${Name}`);
-        return done();
+        expect(body).toBeUndefined();
+        done();
       });
     });
   });

@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import forOwn from 'lodash/forOwn';
 
 import Nomad from '../src';
@@ -9,7 +8,7 @@ describe('Nomad.Config', () => {
       const config = new Nomad.Config();
 
       forOwn(config.defaults, (value, key) => {
-        expect(config[key]).to.equal(value);
+        expect(config[key]).toBe(value);
       });
     });
 
@@ -17,7 +16,7 @@ describe('Nomad.Config', () => {
       const config = new Nomad.Config({ json: false });
 
       const original = config.defaults.json;
-      expect(config.json).to.not.equal(original);
+      expect(config.json).not.toEqual(original);
     });
 
     it('ignores unknown properties', () => {
@@ -25,7 +24,7 @@ describe('Nomad.Config', () => {
 
       const config = new Nomad.Config({ [unknownProp]: 'bar' });
 
-      expect(config).to.not.have.own.property(unknownProp);
+      expect(config).not.toHaveProperty(unknownProp);
     });
   });
 
@@ -41,20 +40,20 @@ describe('Nomad.Config', () => {
       const val = 'bar';
       config.set(prop, val);
 
-      expect(config).to.have.own.property(prop, val);
+      expect(config).toHaveProperty(prop, val);
     });
 
     it('uses the default value when value is undefined', () => {
       const defaultVal = 'bar';
       config.set(prop, undefined, defaultVal);
 
-      expect(config).to.have.own.property(prop, defaultVal);
+      expect(config).toHaveProperty(prop, defaultVal);
     });
 
     it('is a no-op when neither values are defined', () => {
       config.set(prop);
 
-      expect(config).to.not.have.own.property(prop);
+      expect(config).not.toHaveProperty(prop);
     });
   });
 
@@ -70,7 +69,7 @@ describe('Nomad.Config', () => {
 
       config.update({ [unknownProp]: 'bar' });
 
-      expect(config).to.not.have.own.property(unknownProp);
+      expect(config).not.toHaveProperty(unknownProp);
     });
 
     it('allows unknown properties when allowUnknown is set', () => {
@@ -78,7 +77,7 @@ describe('Nomad.Config', () => {
 
       config.update({ [unknownProp]: 'bar' }, true);
 
-      expect(config).to.have.own.property(unknownProp);
+      expect(config).toHaveProperty(unknownProp);
     });
 
     it('updates existing properties', () => {
@@ -86,7 +85,7 @@ describe('Nomad.Config', () => {
 
       config.update({ json: false });
 
-      expect(config.json).to.not.equal(original);
+      expect(config.json).not.toEqual(original);
     });
   });
 
@@ -97,7 +96,7 @@ describe('Nomad.Config', () => {
       config.clear();
 
       forOwn(config.defaults, (value, key) => {
-        expect(config).to.not.have.own.property(key);
+        expect(config).not.toHaveProperty(key);
       });
     });
   });

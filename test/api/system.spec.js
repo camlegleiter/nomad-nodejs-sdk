@@ -3,7 +3,7 @@ import nock from 'nock';
 import Nomad from '../../src';
 
 describe('Nomad.System', () => {
-  before(() => {
+  beforeAll(() => {
     nock.disableNetConnect();
   });
 
@@ -15,7 +15,7 @@ describe('Nomad.System', () => {
     nock.cleanAll();
   });
 
-  after(() => {
+  afterAll(() => {
     nock.enableNetConnect();
   });
 
@@ -26,30 +26,20 @@ describe('Nomad.System', () => {
       client = new Nomad.System();
     });
 
-    it('makes a PUT call to the /system/gc endpoint', () => {
+    it('makes a PUT call to the /system/gc endpoint', async () => {
       nock(/localhost/).put('/v1/system/gc').reply(200);
 
-      return expect(client.forceGC()).to.eventually.be.fulfilled.then(([res]) => {
-        expect(res.req.path).to.equal('/v1/system/gc');
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).put('/v1/system/gc').reply(200);
-
-      return client.forceGC().then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.forceGC();
+      expect(body).toBeUndefined();
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).put('/v1/system/gc').reply(200);
 
-      client.forceGC((err, [res]) => {
-        expect(err).to.be.null;
+      client.forceGC((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/system/gc');
-
+        expect(body).toBeUndefined();
         done();
       });
     });
@@ -62,30 +52,20 @@ describe('Nomad.System', () => {
       client = new Nomad.System();
     });
 
-    it('makes a PUT call to the /system/reconcile/summaries endpoint', () => {
+    it('makes a PUT call to the /system/reconcile/summaries endpoint', async () => {
       nock(/localhost/).put('/v1/system/reconcile/summaries').reply(200);
 
-      return expect(client.reconcileSummaries()).to.eventually.be.fulfilled.then(([res]) => {
-        expect(res.req.path).to.equal('/v1/system/reconcile/summaries');
-      });
-    });
-
-    it('sets the context to the client', () => {
-      nock(/localhost/).put('/v1/system/reconcile/summaries').reply(200);
-
-      return client.reconcileSummaries().then(function then() {
-        expect(this).to.equal(client);
-      });
+      const [, body] = await client.reconcileSummaries();
+      expect(body).toBeUndefined();
     });
 
     it('supports a callback function', (done) => {
       nock(/localhost/).put('/v1/system/reconcile/summaries').reply(200);
 
-      client.reconcileSummaries((err, [res]) => {
-        expect(err).to.be.null;
+      client.reconcileSummaries((err, [, body]) => {
+        expect(err).toBeNull();
 
-        expect(res.req.path).to.equal('/v1/system/reconcile/summaries');
-
+        expect(body).toBeUndefined();
         done();
       });
     });
