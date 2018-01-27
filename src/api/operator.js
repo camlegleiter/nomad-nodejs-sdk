@@ -1,11 +1,16 @@
+import Promise from 'bluebird';
+
 import Nomad from '../nomad';
 import BaseAPI from './base';
 
 Nomad.Operator = class extends BaseAPI {
   // stale - Specifies if the cluster should respond without an active leader. This is specified as
   //   a querystring parameter.
-  readRaftConfiguration({ Stale }, callback) {
+  readRaftConfiguration(...args) {
+    // { Stale }, callback
     return Promise.try(() => {
+      const [[{ Stale = false } = {}], callback] = BaseAPI.spread(...args);
+
       const qs = {};
       if (Stale) {
         qs.stale = null;
@@ -27,10 +32,11 @@ Nomad.Operator = class extends BaseAPI {
   //   multiple times and is provided as a querystring parameter.
   // stale - Specifies if the cluster should respond without an active leader. This is specified as
   //   a querystring parameter.
-  removeRaftPeer({ Address, Stale }, callback) {
+  removeRaftPeer({ Address, Stale = false }, callback) {
     return Promise.try(() => {
-      const address = Array.isArray(Address) ? Address : [Address];
-      const qs = { address };
+      const qs = {
+        address: Array.isArray(Address) ? Address : [Address],
+      };
       if (Stale) {
         qs.stale = null;
       }
