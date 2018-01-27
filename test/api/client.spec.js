@@ -30,7 +30,9 @@ describe('Nomad.Client', () => {
   afterEach(() => {
     const pendingMocks = nock.pendingMocks();
     if (pendingMocks.length) {
-      throw new Error(`Pending mocks still around: ${pendingMocks}`);
+      const mocks = pendingMocks.slice(0);
+      nock.cleanAll();
+      throw new Error(`Pending mocks still around: ${JSON.stringify(mocks)}`);
     }
     nock.cleanAll();
   });
@@ -233,6 +235,262 @@ describe('Nomad.Client', () => {
         body += data;
       }).on('error', done).on('end', () => {
         expect(body).toBe(file);
+        done();
+      });
+    });
+  });
+
+  describe('#streamLogs', () => {
+    const stdout = '2000-01-01 00:00:00 DEBUG className:200 - This is a debug message';
+    const stderr = '2000-01-01 00:00:00 ERROR className:200 - This is an error message';
+
+    beforeEach(() => {
+      Follow = true;
+      Task = 'task';
+      Type = 'stdout';
+      Offset = 0;
+      Origin = 'start';
+      Plain = true;
+    });
+
+    const createAndEmitPlainStream = (type, offset) => {
+      const stream = new Readable({
+        read: () => {},
+      });
+
+      process.nextTick(() => {
+        stream.push((type === 'stdout' ? stdout : stderr).slice(offset));
+        stream.push(null);
+      });
+
+      return stream;
+    };
+
+    const createAndEmitFramedStream = (type, offset) => {
+      const stream = new Readable({
+        read: () => {},
+      });
+
+      process.nextTick(() => {
+        stream.push(JSON.stringify({
+          File: `alloc/logs/${Task}.${type}.0`,
+          Offset: offset,
+          Data: Buffer.from(type === 'stdout' ? stdout : stderr).toString('base64'),
+        }));
+        stream.push(null);
+      });
+
+      return stream;
+    };
+
+    it('makes a GET call to the /client/fs/logs/:allocationid endpoint with defaults', (done) => {
+      nock(/localhost/).get(`/v1/client/fs/logs/${AllocationID}`).query((q) => {
+        expect(q).toEqual({
+          follow: 'false',
+          offset: '0',
+          origin: 'start',
+          plain: 'false',
+          task: Task,
+          type: Type,
+        });
+        return true;
+      }).reply(() => createAndEmitFramedStream(Type, Offset));
+
+      client.streamLogs({
+        AllocationID, Task, Type,
+      }).on('error', done).on('data', () => {}).on('end', done);
+    });
+
+    it('emits an error when the request errors', (done) => {
+      const errorMessage = 'ECONNABORTED';
+      nock(/localhost/).get(`/v1/client/fs/logs/${AllocationID}`)
+        .query(true).replyWithError(errorMessage);
+
+      client.streamLogs({
+        AllocationID, Task, Type,
+      }).on('error', (err) => {
+        expect(err.message).toBe(errorMessage);
+        done();
+      });
+    });
+
+    it('emits an error with the response message if receiving a non-200 status', (done) => {
+      const errorMessage = 'some error message';
+
+      nock(/localhost/).get(`/v1/client/fs/logs/${AllocationID}`).query({
+        follow: 'false',
+        offset: '0',
+        origin: 'start',
+        plain: 'true',
+        task: Task,
+        type: Type,
+      }).reply(400, errorMessage);
+
+      client.streamLogs({
+        AllocationID, Task, Type, Plain,
+      }).on('error', (err) => {
+        expect(err.message).toEqual(errorMessage);
+        done();
+      });
+    });
+
+    it('allows for logs to be tailed for output', (done) => {
+      Follow = true;
+
+      nock(/localhost/).get(`/v1/client/fs/logs/${AllocationID}`).query({
+        follow: 'true',
+        offset: '0',
+        origin: 'start',
+        plain: 'false',
+        task: Task,
+        type: Type,
+      }).reply(() => createAndEmitFramedStream(Type, Offset));
+
+      client.streamLogs({
+        AllocationID, Task, Follow, Type,
+      }).on('error', done).on('data', (frame) => {
+        expect(Buffer.from(frame.Data, 'base64').toString()).toBe(stdout);
+      }).on('end', done);
+    });
+
+    it('allows for stderr logs to be returned', (done) => {
+      Type = 'stderr';
+
+      nock(/localhost/).get(`/v1/client/fs/logs/${AllocationID}`).query({
+        follow: 'false',
+        offset: '0',
+        origin: 'start',
+        plain: 'false',
+        task: Task,
+        type: Type,
+      }).reply(() => createAndEmitFramedStream(Type, Offset));
+
+      client.streamLogs({
+        AllocationID, Task, Type,
+      }).on('error', done).on('data', (frame) => {
+        expect(Buffer.from(frame.Data, 'base64').toString()).toBe(stderr);
+      }).on('end', done);
+    });
+
+    it('allows for logs to be returned as plain text', (done) => {
+      Plain = true;
+
+      nock(/localhost/).get(`/v1/client/fs/logs/${AllocationID}`).query({
+        follow: 'false',
+        offset: '0',
+        origin: 'start',
+        plain: 'true',
+        task: Task,
+        type: Type,
+      }).reply(() => createAndEmitPlainStream(Type, Offset));
+
+      client.streamLogs({
+        AllocationID, Task, Type, Plain,
+      }).on('error', done).on('data', (chunk) => {
+        expect(chunk.toString()).toBe(stdout);
+      }).on('end', done);
+    });
+  });
+
+  describe('#listFiles', () => {
+    const files = [
+      {
+        Name: 'alloc',
+        IsDir: true,
+        Size: 4096,
+        FileMode: 'drwxrwxr-x',
+        ModTime: '2016-03-15T15:40:00.414236712-07:00',
+      },
+    ];
+
+    it('makes a GET call to the /client/fs/ls/:allocationid endpoint with default path', async () => {
+      nock(/localhost/).get(`/v1/client/fs/ls/${AllocationID}`).query({
+        path: '/',
+      }).reply(200, files);
+
+      const [, body] = await client.listFiles({ AllocationID });
+      expect(body).toEqual(files);
+    });
+
+    it('allows for the file path to be set', async () => {
+      nock(/localhost/).get(`/v1/client/fs/ls/${AllocationID}`).query({
+        path: Path,
+      }).reply(200, files);
+
+      const [, body] = await client.listFiles({ AllocationID, Path });
+      expect(body).toEqual(files);
+    });
+
+    it('supports a callback function', (done) => {
+      nock(/localhost/).get(`/v1/client/fs/ls/${AllocationID}`).query({
+        path: '/',
+      }).reply(200, files);
+
+      client.listFiles({ AllocationID }, (err, [, body]) => {
+        expect(err).toBeNull();
+
+        expect(body).toEqual(files);
+        done();
+      });
+    });
+  });
+
+  describe('#statFile', () => {
+    const file = {
+      Name: 'alloc',
+      IsDir: true,
+      Size: 4096,
+      FileMode: 'drwxrwxr-x',
+      ModTime: '2016-03-15T15:40:00.414236712-07:00',
+    };
+
+    it('makes a GET call to the /client/fs/stat/:allocationid endpoint with default path', async () => {
+      nock(/localhost/).get(`/v1/client/fs/stat/${AllocationID}`).query({
+        path: '/',
+      }).reply(200, file);
+
+      const [, body] = await client.statFile({ AllocationID });
+      expect(body).toEqual(file);
+    });
+
+    it('allows for the file path to be set', async () => {
+      nock(/localhost/).get(`/v1/client/fs/stat/${AllocationID}`).query({
+        path: Path,
+      }).reply(200, file);
+
+      const [, body] = await client.statFile({ AllocationID, Path });
+      expect(body).toEqual(file);
+    });
+
+    it('supports a callback function', (done) => {
+      nock(/localhost/).get(`/v1/client/fs/stat/${AllocationID}`).query({
+        path: '/',
+      }).reply(200, file);
+
+      client.statFile({ AllocationID }, (err, [, body]) => {
+        expect(err).toBeNull();
+
+        expect(body).toEqual(file);
+        done();
+      });
+    });
+  });
+
+  describe('#gc', () => {
+    it('makes a GET call to the /client/gc endpoint with default path', async () => {
+      nock(/localhost/).get('/v1/client/gc').reply(200);
+
+      const [, body] = await client.gc();
+      expect(body).toBeUndefined();
+    });
+
+    it('supports a callback function', (done) => {
+      nock(/localhost/).get('/v1/client/gc').reply(200);
+
+      client.gc((err, [, body]) => {
+        expect(err).toBeNull();
+
+        expect(body).toBeUndefined();
         done();
       });
     });

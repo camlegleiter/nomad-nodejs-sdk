@@ -1,6 +1,8 @@
 import esc from 'url-escape-tag';
+import { PassThrough } from 'stream';
 
 import Nomad from '../nomad';
+import { FramedStream } from '../stream';
 import BaseAPI from './base';
 
 Nomad.Client = class extends BaseAPI {
@@ -99,8 +101,8 @@ Nomad.Client = class extends BaseAPI {
   streamLogs({
     AllocationID, Task, Follow = false, Type, Offset = 0, Origin = 'start', Plain = false,
   }) {
-    return this.request.get({
-      json: !Plain, // Do the opposite: if we don't wanted framed logs (JSON), we get plain text
+    const req = this.request.get({
+      json: true,
       qs: {
         task: Task,
         follow: Follow,
@@ -111,6 +113,30 @@ Nomad.Client = class extends BaseAPI {
       },
       uri: esc`client/fs/logs/${AllocationID}`,
     });
+
+    const stream = Plain ? new PassThrough() : new FramedStream();
+
+    req.on('error', (err) => {
+      stream.emit('error', err);
+    });
+
+    req.on('response', (res) => {
+      if (res.statusCode !== 200) {
+        let complete = false;
+        req.on('complete', () => {
+          if (complete) {
+            return;
+          }
+          complete = true;
+          stream.emit('error', new Error(res.body));
+        });
+        req.readResponseBody(res);
+        return;
+      }
+      res.pipe(stream);
+    });
+
+    return stream;
   }
 
   // AllocationID (string: <required>) - Specifies the allocation ID to query. This is specified as
@@ -120,6 +146,7 @@ Nomad.Client = class extends BaseAPI {
   //   allocation directory.
   listFiles({ AllocationID, Path = '/' }, callback) {
     return this.request.getAsync({
+      json: true,
       qs: {
         path: Path,
       },
@@ -136,6 +163,7 @@ Nomad.Client = class extends BaseAPI {
   //   allocation directory.
   statFile({ AllocationID, Path = '/' }, callback) {
     return this.request.getAsync({
+      json: true,
       qs: {
         path: Path,
       },
