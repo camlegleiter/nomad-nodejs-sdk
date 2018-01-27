@@ -14,7 +14,7 @@ module.exports = {
     'arrow-parens': ['error', 'always'],
     curly: ['error', 'all'],
     indent: ['error', 2, {
-      MemberExpression: 0,
+      MemberExpression: 'off',
     }],
     'object-curly-newline': ['error', { 'consistent': true }],
     'no-param-reassign': ['error'],
