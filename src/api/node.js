@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import esc from 'url-escape-tag';
 
 import Nomad from '../nomad';
@@ -6,8 +7,11 @@ import BaseAPI from './base';
 Nomad.Node = class extends BaseAPI {
   // prefix (string: "")- Specifies a string to filter nodes on based on an index prefix. This is
   //   specified as a querystring parameter.
-  listNodes({ Prefix }, callback) {
+  listNodes(...args) {
+    // { Prefix }, callback
     return Promise.try(() => {
+      const [[{ Prefix = '' } = {}], callback] = BaseAPI.spread(...args);
+
       const qs = {};
       if (Prefix != null && Prefix !== '') {
         qs.prefix = Prefix;
@@ -46,7 +50,7 @@ Nomad.Node = class extends BaseAPI {
   //   the short 8-character one. This is specified as part of the path.
   createNodeEvaluation({ NodeID }, callback) {
     return this.request.postAsync({
-      uri: esc`node/${NodeID}/evaluation`,
+      uri: esc`node/${NodeID}/evaluate`,
     })
     .bind(this)
     .asCallback(callback);
@@ -56,7 +60,7 @@ Nomad.Node = class extends BaseAPI {
   //   the short 8-character one. This is specified as part of the path.
   // enable (bool: <required>) - Specifies if drain mode should be enabled. This is specified as a
   //   query string parameter.
-  drainNode({ NodeID, Enable }, callback) {
+  drainNode({ NodeID, Enable = false }, callback) {
     return this.request.postAsync({
       qs: {
         enable: Enable,
