@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import esc from 'url-escape-tag';
 
 import Nomad from '../nomad';
@@ -6,8 +7,11 @@ import BaseAPI from './base';
 Nomad.Quota = class extends BaseAPI {
   // prefix (string: "")- Specifies a string to filter quota specifications on based on an index
   //   prefix. This is specified as a querystring parameter.
-  listQuotaSpecifications({ Prefix }, callback) {
+  listQuotaSpecifications(...args) {
+    // { Prefix }, callback
     return Promise.try(() => {
+      const [[{ Prefix = '' } = {}], callback] = BaseAPI.spread(...args);
+
       const qs = {};
       if (Prefix != null && Prefix !== '') {
         qs.prefix = Prefix;
@@ -72,8 +76,11 @@ Nomad.Quota = class extends BaseAPI {
 
   // prefix (string: "")- Specifies a string to filter quota specifications on based on an index
   //   prefix. This is specified as a querystring parameter.
-  listQuotaUsages({ Prefix }, callback) {
+  listQuotaUsages(...args) {
+    // { Prefix }, callback
     return Promise.try(() => {
+      const [[{ Prefix = '' } = {}], callback] = BaseAPI.spread(...args);
+
       const qs = {};
       if (Prefix != null && Prefix !== '') {
         qs.prefix = Prefix;
