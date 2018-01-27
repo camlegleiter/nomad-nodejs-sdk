@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import esc from 'url-escape-tag';
 
 import Nomad from '../nomad';
@@ -6,8 +7,11 @@ import BaseAPI from './base';
 Nomad.Namespace = class extends BaseAPI {
   // prefix (string: "") - Specifies a string to filter namespaces on based on an index prefix. This
   //   is specified as a querystring parameter.
-  listNamespaces({ Prefix }, callback) {
+  listNamespaces(...args) {
+    // { Prefix }, callback
     return Promise.try(() => {
+      const [[{ Prefix = '' } = {}], callback] = BaseAPI.spread(...args);
+
       const qs = {};
       if (Prefix != null && Prefix !== '') {
         qs.prefix = Prefix;
@@ -36,7 +40,7 @@ Nomad.Namespace = class extends BaseAPI {
   createNamespace({ Namespace, Description = '' }, callback) {
     return Promise.try(() => {
       const body = { Namespace };
-      if (Description !== undefined && Description !== '') {
+      if (typeof Description === 'string' && Description !== '') {
         body.Description = Description;
       }
 
