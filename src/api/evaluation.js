@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import esc from 'url-escape-tag';
 
 import Nomad from '../nomad';
@@ -6,8 +7,11 @@ import BaseAPI from './base';
 Nomad.Evaluation = class extends BaseAPI {
   // prefix (string: "")- Specifies a string to filter evaluations on based on an index prefix. This
   //   is specified as a querystring parameter.
-  listEvaluations({ Prefix = '' }, callback) {
+  listEvaluations(...args) {
+    // { Prefix }, callback
     return Promise.try(() => {
+      const [[{ Prefix = '' } = {}], callback] = BaseAPI.spread(...args);
+
       const qs = {};
       if (Prefix !== undefined && Prefix !== '') {
         qs.prefix = Prefix;
