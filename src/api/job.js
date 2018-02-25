@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import esc from 'url-escape-tag';
 
 import Nomad from '../nomad';
@@ -6,8 +7,11 @@ import BaseAPI from './base';
 Nomad.Job = class extends BaseAPI {
   // prefix (string: "") - Specifies a string to filter jobs on based on an index prefix. This is
   //   specified as a querystring parameter.
-  listJobs({ Prefix }, callback) {
+  listJobs(...args) {
+    // { Prefix }, callback
     return Promise.try(() => {
+      const [[{ Prefix = '' } = {}], callback] = BaseAPI.spread(...args);
+
       const qs = {};
       if (Prefix !== undefined && Prefix !== '') {
         qs.prefix = Prefix;
@@ -249,7 +253,7 @@ Nomad.Job = class extends BaseAPI {
     return Promise.try(() => {
       const qs = {};
       if (Purge === true) {
-        qs.Purge = true;
+        qs.purge = true;
       }
 
       return this.request.deleteAsync({
