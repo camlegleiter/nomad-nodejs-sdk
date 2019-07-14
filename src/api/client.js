@@ -1,9 +1,9 @@
-import esc from 'url-escape-tag';
-import { PassThrough } from 'stream';
+const { PassThrough } = require('stream');
+const esc = require('url-escape-tag');
 
-import Nomad from '../nomad';
-import { FramedStream } from '../stream';
-import BaseAPI from './base';
+const BaseAPI = require('./base');
+const Nomad = require('../nomad');
+const { FramedStream } = require('../stream');
 
 Nomad.Client = class extends BaseAPI {
   readStats(callback) {

@@ -1,4 +1,4 @@
-import FramedStream from '../../src/stream/framedstream';
+const FramedStream = require('../../src/stream/framedstream');
 
 describe('FramedStream', () => {
   let framedStream;

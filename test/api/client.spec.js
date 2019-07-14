@@ -1,7 +1,7 @@
-import nock from 'nock';
-import { Readable } from 'stream';
+const nock = require('nock');
+const { Readable } = require('stream');
 
-import Nomad from '../../src';
+const Nomad = require('../../src');
 
 describe('Nomad.Client', () => {
   let AllocationID;

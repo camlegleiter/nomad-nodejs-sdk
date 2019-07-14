@@ -1,7 +1,7 @@
-import forOwn from 'lodash/forOwn';
-import has from 'lodash/has';
+const forOwn = require('lodash/forOwn');
+const has = require('lodash/has');
 
-import Nomad from './nomad';
+const Nomad = require('./nomad');
 
 Nomad.Config = class {
   constructor(options) {

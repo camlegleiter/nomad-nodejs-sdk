@@ -1,6 +1,6 @@
-import nock from 'nock';
+const nock = require('nock');
 
-import Nomad from '../../src';
+const Nomad = require('../../src');
 
 describe('Nomad.Metrics', () => {
   let Format;

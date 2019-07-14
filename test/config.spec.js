@@ -1,6 +1,6 @@
-import forOwn from 'lodash/forOwn';
+const forOwn = require('lodash/forOwn');
 
-import Nomad from '../src';
+const Nomad = require('../src');
 
 describe('Nomad.Config', () => {
   describe('#constructor', () => {

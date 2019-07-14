@@ -1,7 +1,7 @@
-import esc from 'url-escape-tag';
+const esc = require('url-escape-tag');
 
-import Nomad from '../nomad';
-import BaseAPI from './base';
+const BaseAPI = require('./base');
+const Nomad = require('../nomad');
 
 Nomad.Deployment = class extends BaseAPI {
   // prefix (string: "")- Specifies a string to filter deployments on based on an index prefix. This

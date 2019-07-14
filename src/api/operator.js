@@ -1,7 +1,7 @@
-import Promise from 'bluebird';
+const Promise = require('bluebird');
 
-import Nomad from '../nomad';
-import BaseAPI from './base';
+const BaseAPI = require('./base');
+const Nomad = require('../nomad');
 
 Nomad.Operator = class extends BaseAPI {
   // stale - Specifies if the cluster should respond without an active leader. This is specified as

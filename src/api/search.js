@@ -1,5 +1,5 @@
-import Nomad from '../nomad';
-import BaseAPI from './base';
+const BaseAPI = require('./base');
+const Nomad = require('../nomad');
 
 Nomad.Search = class extends BaseAPI {
   // Prefix (string: <required>) - Specifies the identifer against which matches will be found. For

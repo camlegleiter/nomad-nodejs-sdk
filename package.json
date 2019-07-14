@@ -4,31 +4,21 @@
   "description": "A NodeJS SDK for interacting with a Nomad cluster",
   "main": "dist/src/index.js",
   "author": "Cameron Legleiter <camlegleiter@gmail.com>",
+  "repository": "git@github.com:camlegleiter/nomad-nodejs-sdk",
   "license": "MIT",
   "scripts": {
     "coverage": "jest --coverage",
     "lint": "eslint src test",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "transpile": "rm -rf dist/* && babel src --out-dir dist/src && babel test --out-dir dist/test && cp package.json dist/"
+    "test:watch": "jest --watch"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-jest": "^24.8.0",
-    "babel-plugin-istanbul": "^5.1.4",
-    "babel-plugin-transform-async-to-module-method": "^6.24.1",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-stage-1": "^6.24.1",
-    "cross-env": "^5.1.1",
-    "eslint": "^4.12.0",
+    "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jest": "^21.7.0",
-    "eslint-plugin-mocha": "^4.11.0",
     "jest": "^24.8.0",
-    "nock": "^9.1.6",
-    "sinon": "^4.1.2",
-    "sinon-chai": "^2.14.0"
+    "nock": "^10.0.6"
   },
   "dependencies": {
     "bluebird": "^3.5.1",

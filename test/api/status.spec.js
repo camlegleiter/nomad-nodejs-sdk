@@ -1,6 +1,6 @@
-import nock from 'nock';
+const nock = require('nock');
 
-import Nomad from '../../src';
+const Nomad = require('../../src');
 
 describe('Nomad.Status', () => {
   const leader = '127.0.0.1:4646';

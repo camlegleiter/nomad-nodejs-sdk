@@ -1,8 +1,8 @@
-import { name, version } from '../package.json';
+const { name, version } = require('../package.json');
 
 const Nomad = {
   NAME: name,
   VERSION: version,
 };
 
-export default Nomad;
+module.exports = Nomad;

@@ -1,5 +1,5 @@
-import Nomad from '../nomad';
-import BaseAPI from './base';
+const BaseAPI = require('./base');
+const Nomad = require('../nomad');
 
 Nomad.Agent = class extends BaseAPI {
   listMembers(callback) {

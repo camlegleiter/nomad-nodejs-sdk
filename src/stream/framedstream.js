@@ -1,6 +1,6 @@
-import { Transform } from 'stream';
+const { Transform } = require('stream');
 
-export default class FramedStream extends Transform {
+module.exports = class FramedStream extends Transform {
   constructor(options = {}) {
     super({
       ...options,

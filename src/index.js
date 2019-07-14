@@ -1,5 +1,6 @@
-import Nomad from './nomad';
-import './config';
-import './api';
+const Nomad = require('./nomad');
 
-export default Nomad;
+require('./config');
+require('./api');
+
+module.exports = Nomad;

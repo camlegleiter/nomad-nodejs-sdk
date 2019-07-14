@@ -1,5 +1,5 @@
-import Nomad from '../nomad';
-import BaseAPI from './base';
+const Nomad = require('../nomad');
+const BaseAPI = require('./base');
 
 Nomad.Validate = class extends BaseAPI {
   validateJob({ Job }, callback) {

@@ -1,5 +1,5 @@
-import Nomad from '../src/nomad';
-import pkg from '../package.json';
+const Nomad = require('../src/nomad');
+const pkg = require('../package.json');
 
 describe('Nomad', () => {
   describe('NAME', () => {

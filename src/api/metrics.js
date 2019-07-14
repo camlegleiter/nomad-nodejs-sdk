@@ -1,7 +1,7 @@
-import Promise from 'bluebird';
+const Promise = require('bluebird');
 
-import Nomad from '../nomad';
-import BaseAPI from './base';
+const BaseAPI = require('./base');
+const Nomad = require('../nomad');
 
 Nomad.Metrics = class extends BaseAPI {
   // format (string: "") - Specifies the metrics format to be other than the JSON default.

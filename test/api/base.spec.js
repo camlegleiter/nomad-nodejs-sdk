@@ -1,7 +1,7 @@
-import nock from 'nock';
+const nock = require('nock');
 
-import BaseAPI from '../../src/api/base';
-import Nomad from '../../src';
+const BaseAPI = require('../../src/api/base');
+const Nomad = require('../../src');
 
 describe('BaseAPI', () => {
   describe('#constructor', () => {

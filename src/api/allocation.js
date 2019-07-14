@@ -1,8 +1,8 @@
-import Promise from 'bluebird';
-import esc from 'url-escape-tag';
+const Promise = require('bluebird');
+const esc = require('url-escape-tag');
 
-import Nomad from '../nomad';
-import BaseAPI from './base';
+const BaseAPI = require('./base');
+const Nomad = require('../nomad');
 
 Nomad.Allocation = class extends BaseAPI {
   // prefix (string: "")- Specifies a string to filter allocations on based on an index prefix. This

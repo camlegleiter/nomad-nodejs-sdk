@@ -1,7 +1,7 @@
-import esc from 'url-escape-tag';
+const esc = require('url-escape-tag');
 
-import Nomad from '../nomad';
-import BaseAPI from './base';
+const BaseAPI = require('./base');
+const Nomad = require('../nomad');
 
 Nomad.ACLToken = class extends BaseAPI {
   bootstrapToken(callback) {
