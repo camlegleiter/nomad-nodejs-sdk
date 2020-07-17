@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "bluebird": "^3.5.1",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.19",
     "request": "^2.83.0",
     "url-escape-tag": "^1.0.0"
   }
